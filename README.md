@@ -34,57 +34,13 @@ Hydro-Opsは次のコンポーネントで構成されています：
 
 ## クイックスタート
 
-初めてセットアップする場合は、[SETUP.md](SETUP.md)を参照してください。
-Gitリポジトリとして管理する場合は、[GIT_SETUP.md](GIT_SETUP.md)を参照してください。
+初めてセットアップする場合は、以下のドキュメントを順番に参照してください：
 
-## インストール手順
+1. **[SETUP.md](SETUP.md)** - セットアップ手順の詳細ガイド
+2. **[DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md)** - デプロイ時の必須チェックリスト（**重要**）
+3. **[GIT_SETUP.md](GIT_SETUP.md)** - Gitリポジトリとして管理する場合
 
-### 1. リポジトリのクローン
-
-```bash
-git clone https://github.com/hiromura16/HydroOps.git
-cd HydroOps
-```
-
-### 2. 外部ボリュームの作成
-
-```bash
-docker volume create hydro_ops_prometheus_data
-docker volume create hydro_ops_kapacitor_data
-```
-
-### 3. 設定ファイルのカスタマイズ
-
-各サービスの設定ファイルは `docker/[サービス名]/config/` ディレクトリにあります。必要に応じて編集してください。
-
-**重要**: 機密情報を含む設定ファイル（`config.json`、`settings.js`、`dashboard_users.txt`など）は`.gitignore`で除外されています。初回セットアップ時は、`.example`ファイルをコピーして設定してください。
-
-重要な設定ファイル：
-
-- `docker/traefik/traefik.yml`: Traefikの基本設定
-- `docker/influxdb/config/influxdb.conf`: InfluxDBの設定
-- `docker/grafana/config/grafana.ini`: Grafanaの設定
-- `docker/kasen2influxdb/config.json`: 河川データ収集の設定（`.example`ファイルをコピーして作成）
-- `docker/nodered/config/settings.js`: Node-REDの設定（`.example`ファイルをコピーして作成）
-- `docker/traefik/dashboard_users.txt`: Traefikダッシュボード認証設定（`.example`ファイルをコピーして作成）
-
-### 4. SSL証明書の設定
-
-証明書は `certs/live/` ディレクトリに配置します：
-
-- `cert.pem`: サーバー証明書
-- `fullchain.pem`: 証明書チェーン
-- `yourdomain.com.key`: 秘密鍵（実際のドメイン名に置き換えてください）
-
-または、Traefikの自動証明書取得機能を利用することもできます（`docker/traefik/compose.yml`を編集）。
-
-### 5. システムの起動
-
-```bash
-docker compose up -d
-```
-
-すべてのサービスが起動します。初回起動時はイメージのダウンロードに時間がかかる場合があります。
+**重要**: 機密情報を削除したため、デプロイ前に必ず[DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md)を確認し、すべてのプレースホルダーを実際の値に置き換えてください。
 
 ## 各サービスへのアクセス
 
