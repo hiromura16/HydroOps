@@ -1,5 +1,10 @@
 # Hydro-Ops:（バックアップ監視システム）
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Version](https://img.shields.io/badge/version-beta-blue.svg)](https://github.com/hiromura16/HydroOps/releases)
+[![Docker](https://img.shields.io/badge/docker-compose-blue.svg)](https://docs.docker.com/compose/)
+[![Status](https://img.shields.io/badge/status-active-success.svg)](https://github.com/hiromura16/HydroOps)
+
 ## 概要
 
 Hydro-Opsは施設等の監視のためのデータの収集、監視、分析のための統合プラットフォームです。このシステムは複数のオープンソースコンポーネントを組み合わせ、Docker Composeを使用して簡単にデプロイできる環境を提供します。現在の遠方監視システムのバックアップとして開発しています。
@@ -163,13 +168,23 @@ docker compose logs [起動しないサービス名]
 
 ## ライセンス
 
-このプロジェクトのライセンス情報については、リポジトリのLICENSEファイルを参照してください。
+このプロジェクトは [MIT License](LICENSE) の下で公開されています。
+
+Copyright (c) 2025 Hiroshi Murakami
 
 ## サポート・貢献
 
 問題や提案がある場合は、GitHubリポジトリのIssueを作成してください。
 
 - リポジトリ: [https://github.com/hiromura16/HydroOps](https://github.com/hiromura16/HydroOps)
+- Issues: [https://github.com/hiromura16/HydroOps/issues](https://github.com/hiromura16/HydroOps/issues)
+- Releases: [https://github.com/hiromura16/HydroOps/releases](https://github.com/hiromura16/HydroOps/releases)
+
+## バージョン情報
+
+現在のバージョン: **v0.1.0-beta**
+
+変更履歴は[CHANGELOG.md](CHANGELOG.md)を参照してください。
 
 ---
 
