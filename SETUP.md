@@ -41,7 +41,7 @@ cp docker/traefik/dashboard_users.txt.example docker/traefik/dashboard_users.txt
 
 - `cert.pem`: サーバー証明書
 - `fullchain.pem`: 証明書チェーン
-- `yourdomain.com.key`: 秘密鍵
+- `yourdomain.com.key`: 秘密鍵（実際のドメイン名に置き換えてください）
 
 詳細は`certs/docs/README.md`を参照してください。
 

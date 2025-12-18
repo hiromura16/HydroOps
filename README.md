@@ -74,7 +74,7 @@ docker volume create hydro_ops_kapacitor_data
 
 - `cert.pem`: サーバー証明書
 - `fullchain.pem`: 証明書チェーン
-- `yourdomain.com.key`: 秘密鍵
+- `yourdomain.com.key`: 秘密鍵（実際のドメイン名に置き換えてください）
 
 または、Traefikの自動証明書取得機能を利用することもできます（`docker/traefik/compose.yml`を編集）。
 
