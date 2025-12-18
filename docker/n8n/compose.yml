@@ -1,0 +1,26 @@
+# /opt/hydro-ops/docker/n8n/compose.yml
+services:
+  n8n:
+    image: n8nio/n8n:stable
+    container_name: hydro_ops_n8n
+    restart: unless-stopped
+    environment:
+      - GENERIC_TIMEZONE=${TZ:-Asia/Tokyo} # .env で TZ を設定
+      - WEBHOOK_URL=https://n8n.${DOMAIN_NAME}/ # Traefik経由の外部アクセスURL
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY} # .env から読み込み
+      # - N8N_USER_MANAGEMENT_DISABLED=true # trueにするとユーザー認証なし(テスト時のみ推奨)
+      - EXECUTIONS_DATA_PRUNE=true # 古い実行データを自動削除
+      - EXECUTIONS_DATA_MAX_AGE=168 # 実行データの最大保持期間 (時間単位、例: 168時間 = 7日間)
+      - TZ=${TZ:-Asia/Tokyo} # コンテナ内のタイムゾーンも設定
+      - N8N_RUNNERS_ENABLED=true
+    volumes:
+      - n8n_data:/home/node/.n8n # データ永続化用 (メインのdocker-compose.ymlで定義)
+    networks:
+      - internal_services
+      - traefik_public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.n8n.rule=Host(`n8n.${DOMAIN_NAME}`)" # .env で DOMAIN_NAME を設定
+      - "traefik.http.routers.n8n.entrypoints=websecure"
+      - "traefik.http.routers.n8n.tls=true"
+      - "traefik.http.services.n8n.loadbalancer.server.port=5678" # n8nのデフォルトポート

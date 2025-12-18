@@ -1,0 +1,20 @@
+services:
+  kasen2influxdb:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kasen2influxdb
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./config.json:/app/config.json:ro
+      - ./config.csv:/app/config.csv:ro
+    environment:
+      - KASEN2INFLUXDB_CONFIG_PATH=/app/config.json
+    networks:
+      - traefik_public
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f 'apscheduler' || exit 1"]
+      interval: 1m
+      timeout: 10s
+      retries: 3

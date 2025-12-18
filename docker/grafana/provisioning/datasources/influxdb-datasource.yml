@@ -1,0 +1,20 @@
+# /opt/hydro-ops/docker/grafana/provisioning/datasources/influxdb-datasource.yml
+
+# Grafanaのデータソースを自動的にプロビジョニングするための設定ファイル
+apiVersion: 1
+
+datasources:
+  - name: InfluxDB-Hydro # Grafana UIに表示されるデータソース名 (任意)
+    type: influxdb       # データソースのタイプ
+    access: proxy        # Grafanaバックエンド経由でアクセス (推奨: directだとブラウザから直接アクセス)
+    url: http://hydro_ops_influxdb:8086 # InfluxDBコンテナの内部URL (サービス名で解決)
+    isDefault: true      # このデータソースをデフォルトにするか (オプション)
+    jsonData:
+      version: Flux      # InfluxDB v2.x なのでFluxクエリエディタを使用
+      organization: '${PROV_INFLUXDB_ORG}'    # Grafanaコンテナの環境変数から組織名を取得
+      defaultBucket: '${PROV_INFLUXDB_BUCKET}'# Grafanaコンテナの環境変数からデフォルトバケットを取得
+      tlsSkipVerify: false # InfluxDBが自己署名証明書などを使用している場合にtrue (内部通信なので通常はfalse)
+      # httpMode: GET # Fluxクエリの場合、デフォルトはPOST。GETにしたい場合は指定。
+    secureJsonData:
+      token: '${PROV_INFLUXDB_TOKEN}' # Grafanaコンテナの環境変数からトークンを取得
+    editable: true # UIからこのデータソースの設定を編集可能にするか (falseにするとプロビジョニングされた設定で固定)

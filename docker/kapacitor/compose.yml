@@ -1,0 +1,25 @@
+# /opt/hydro-ops/docker/kapacitor/compose.yml
+services:
+  kapacitor:
+    image: kapacitor:latest
+    container_name: hydro_ops_kapacitor
+    restart: unless-stopped
+    environment:
+      - KAPACITOR_HOSTNAME=hydro_ops_kapacitor # kapacitor.conf の hostname と一致させる
+      # kapacitor.conf の設定は環境変数で上書き可能 (KAPACITOR_セクション名_キー名=値)
+      - KAPACITOR_INFLUXDB_0_URLS_0=http://hydro_ops_influxdb:8086 # 最初のInfluxDB接続(インデックス0)のURL
+      - KAPACITOR_INFLUXDB_0_TOKEN=${KAPACITOR_INFLUXDB_TOKEN} # .env から読み込むトークン
+      # - KAPACITOR_INFLUXDB_0_ORGANIZATION_ID=${INFLUXDB_ORG_ID} # .env から組織IDを読み込む場合
+      - TZ=${TZ:-Asia/Tokyo}
+      - KAPACITOR_AS_ROOT=true 
+    user: "0:0" 
+    ports:
+      - "9092:9092" # Kapacitor APIポート
+    volumes:
+      - ./config/kapacitor.conf:/etc/kapacitor/kapacitor.conf:ro
+      - kapacitor_data:/var/lib/kapacitor # データ永続化用
+    networks:
+      - internal_services
+    depends_on:
+      influxdb:
+        condition: service_healthy # InfluxDBがhealthy状態になってから起動

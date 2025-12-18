@@ -1,0 +1,51 @@
+# /opt/hydro-ops/docker/telegraf/compose.yml
+# このファイルはメインの docker-compose.yml から include されることを想定しています。
+
+services:
+  telegraf:
+    image: telegraf:latest
+    container_name: hydro_ops_telegraf
+    restart: unless-stopped
+    privileged: true
+    # Telegrafコンテナ内のtelegrafユーザー(通常UID 999)がDockerソケットにアクセスできるように、
+    # ホストのDockerソケットのグループIDをコンテナ内のtelegrafユーザーの追加グループとして設定します。
+    # .envファイルで DOCKER_SOCKET_GID を設定してください。
+    group_add:
+      - "${DOCKER_SOCKET_GID:-988}" # Defaults to 999 if DOCKER_SOCKET_GID is not set
+
+    networks:
+      - internal_services # InfluxDBとの通信用
+
+    volumes:
+      # Telegraf設定ファイルをマウント
+      - ./config/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+      # Dockerソケットをマウント (Dockerメトリクス収集用)
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # ホストのシステム情報をマウント (ホストメトリクス収集用)
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /etc/os-release:/host/etc/os-release:ro # ホストOS情報 (inputs.systemなどで利用される可能性)
+      - /run/udev:/run/udev:ro
+
+    environment:
+      # タイムゾーン設定 (.envから読み込み)
+      - TZ=${TZ}
+      # ホストのパスをTelegrafコンテナ内で参照するための環境変数 (telegraf.conf内では使用していませんが、将来的に使う可能性も)
+      - HOST_PROC=/host/proc
+      - HOST_SYS=/host/sys
+      - HOST_ETC_OS_RELEASE=/host/etc/os-release # telegraf.conf で inputs.system が暗黙的に利用する可能性
+      - HOST_RUN_UDEV_DATA=/host/run/udev/data   # telegraf.conf で inputs.diskio が暗黙的に利用する可能性
+
+      # InfluxDB接続情報 (.envから読み込み、telegraf.conf内で参照)
+      - INFLUX_URL=http://hydro_ops_influxdb:8086
+      - INFLUX_TOKEN=${TELEGRAF_INFLUXDB_TOKEN}
+      - INFLUX_ORG=${INFLUXDB_INIT_ORG}
+      - INFLUX_BUCKET=${INFLUXDB_INIT_BUCKET}
+
+      # Telegrafエージェントのホスト名 (.envから読み込み、telegraf.conf内で参照)
+      - TELEGRAF_AGENT_HOSTNAME=${TELEGRAF_AGENT_HOSTNAME}
+
+    depends_on:
+      influxdb:
+        condition: service_healthy # InfluxDBが正常起動してからTelegrafを起動 (InfluxDBのcompose.ymlにhealthcheckが必要)
+        # もしInfluxDBにhealthcheckがなければ condition: service_started でも可

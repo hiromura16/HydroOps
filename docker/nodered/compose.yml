@@ -1,0 +1,26 @@
+# docker/nodered/compose.yml
+
+services:
+  nodered:
+    image: nodered/node-red:latest
+    container_name: hydro_ops_nodered
+    restart: unless-stopped
+    user: "1000:1000"            # フローや設定ファイルをホストUID=1000で扱う
+    environment:
+      - TZ=${TZ:-Asia/Tokyo}
+    volumes:
+      - nodered_data:/data       # フロー(.json)、settings.js などを /data に保持
+      - ./config/settings.js:/data/settings.js:ro  # カスタム設定(認証やSSLなど)
+    networks:
+      - internal_services
+      - traefik_public
+    labels:
+      - "traefik.enable=true"
+      # Node-RED ルーター
+      - "traefik.http.routers.nodered.rule=Host(`nodered.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.nodered.entrypoints=websecure"
+      - "traefik.http.routers.nodered.tls=true"
+      - "traefik.http.services.nodered.loadbalancer.server.port=1880"
+      # # Traefik の Basic Auth ミドルウェア(traefik-auth@file は traefik 側の dynamic_conf で定義済み)
+      # - "traefik.http.routers.nodered.middlewares=traefik-auth@file"
+

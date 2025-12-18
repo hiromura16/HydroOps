@@ -1,0 +1,66 @@
+# docker/traefik/traefik.yml
+# Traefik 静的設定ファイル
+
+# --- グローバル設定 ---
+global:
+  checkNewVersion: true
+  sendAnonymousUsage: false
+
+# --- APIとダッシュボード ---
+api:
+  dashboard: true
+  insecure: false # 開発時のみ。本番ではfalseにし、ルーターで認証を設定
+
+# --- エントリーポイント定義 ---
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+
+  websecure:
+    address: ":443"
+    http:
+      tls:
+        options: default
+
+# --- プロバイダー設定 ---
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    network: "hydro_ops_traefik_public"
+
+  file:
+    directory: /etc/traefik/dynamic_conf/
+    watch: true
+
+# --- ログ設定 ---
+log:
+  level: DEBUG
+  format: common
+
+# --- アクセスログ設定 ---
+accessLog:
+  format: common
+
+# --- TLS設定 ---
+tls:
+  # certificates:
+  #   - certFile: /etc/ssl/traefik_certs/fullchain.pem
+  #     keyFile: /etc/ssl/traefik_certs/yourdomain.com.key
+
+  options:
+    default:
+      minVersion: VersionTLS12
+      cipherSuites:
+        - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
+        - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256

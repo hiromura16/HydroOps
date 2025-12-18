@@ -1,0 +1,8 @@
+# Traefikダッシュボード用のBasic認証ユーザー設定
+# 形式: username:hashed_password
+# パスワードのハッシュ化方法:
+# echo $(htpasswd -nb username password) | sed -e s/\\$/\\$\\$/g
+# 
+# 例:
+# admin:$apr1$xxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+

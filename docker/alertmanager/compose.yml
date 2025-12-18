@@ -1,0 +1,32 @@
+# docker/alertmanager/compose.yml
+services:
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: hydro_ops_alertmanager
+    restart: unless-stopped
+    user: "${UID_GID}" # .envから読み込み
+
+    networks:
+      - internal_services
+      - traefik_public
+
+    volumes:
+      - ./config/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager_data:/alertmanager # メインのdocker-compose.ymlで定義
+
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+      - '--web.external-url=https://alertmanager.${DOMAIN_NAME}/' # Traefik経由のURL
+
+    environment:
+      - TZ=${TZ}
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.alertmanager.rule=Host(`alertmanager.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.alertmanager.entrypoints=websecure"
+      - "traefik.http.routers.alertmanager.tls=true"
+      - "traefik.http.services.alertmanager.loadbalancer.server.port=9093"
+      # Traefikダッシュボードと同じ認証をかける場合 (推奨)
+      - "traefik.http.routers.alertmanager.middlewares=traefik-auth@file" # docker/traefik/dynamic_conf/ で定義した認証ミドルウェア名

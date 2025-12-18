@@ -1,0 +1,45 @@
+# docker/traefik/compose.yml
+# このファイルはメインの docker-compose.yml から include されることを想定しています。
+# ネットワークや名前付きボリュームはメインファイルで定義されているものを参照します。
+
+services:
+  traefik:
+    image: traefik:v3.4.0 # Traefikのバージョンを v3.4.0 に指定
+    container_name: hydro_ops_traefik
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true # セキュリティオプション: 新しい権限の取得を禁止
+
+    networks:
+      - traefik_public # メインのdocker-compose.ymlで定義されたネットワーク
+      # - internal_services # 他の内部サービスと直接通信する必要がある場合に接続
+
+    ports:
+      - "80:80"   # HTTP
+      - "443:443" # HTTPS
+      - "8080:8080" # Traefikダッシュボード用APIポート (セキュリティ注意)
+
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik.yml:/etc/traefik/traefik.yml:ro # このファイルと同じディレクトリにあるtraefik.yml
+      - ./dynamic_conf/:/etc/traefik/dynamic_conf/:ro # このファイルと同じディレクトリにあるdynamic_conf/
+      - ../../certs/live/:/etc/ssl/traefik_certs/:ro # このファイルと同じディレクトリにあるcerts/
+      - ./dashboard_users.txt:/etc/traefik/dashboard_users.txt:ro # このファイルと同じディレクトリにあるdashboard_users.txt
+      # - traefik_acme_data:/letsencrypt # メインのdocker-compose.ymlで定義されたボリューム (Let's Encrypt用)
+
+    environment:
+      - TZ=${TZ:-Asia/Tokyo}
+      # 以下は .env ファイルで設定することを推奨する例
+      # - TRAEFIK_PROVIDERS_DOCKER_EXPOSED_BY_DEFAULT=${TRAEFIK_PROVIDERS_DOCKER_EXPOSED_BY_DEFAULT:-false}
+      # - TRAEFIK_API_INSECURE=${TRAEFIK_API_INSECURE:-true} # 開発時のみtrue。本番ではfalseにし、認証を設定。
+      # - TRAEFIK_LOG_LEVEL=${TRAEFIK_LOG_LEVEL:-INFO}
+      # - TRAEFIK_ACCESSLOG=true
+      # - TRAEFIK_ACCESSLOG_FORMAT=json
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik-dashboard.rule=Host(`traefik.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.traefik-dashboard.tls=true"
+      - "traefik.http.routers.traefik-dashboard.service=api@internal"
+      - "traefik.http.routers.traefik-dashboard.middlewares=traefik-auth@file"

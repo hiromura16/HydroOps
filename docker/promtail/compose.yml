@@ -1,0 +1,24 @@
+# docker/promtail/compose.yml
+services:
+  promtail:
+    image: grafana/promtail:3.4.3
+    container_name: hydro_ops_promtail
+    restart: unless-stopped
+    command: -config.file=/etc/promtail/promtail-config.yml
+    networks:
+      - internal_services
+
+    volumes:
+      - ./config/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro # Dockerデーモンのソケットをマウント
+      - promtail_positions:/tmp # positionsファイルを永続化 (メインのdocker-compose.ymlで定義)
+      # 特定のホスト上のログファイルを収集する場合、そのディレクトリをマウント
+      # 例: - /var/log/some_app:/var/log/some_app:ro
+
+    environment:
+      - TZ=${TZ:-Asia/Tokyo}
+
+    depends_on: # Lokiが起動してからPromtailが起動するように
+      loki:
+        # Lokiのヘルスチェックがあれば condition: service_healthy がより確実
+        condition: service_started

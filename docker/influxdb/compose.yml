@@ -1,0 +1,52 @@
+# /opt/hydro-ops/docker/influxdb/compose.yml
+# このファイルはメインの docker-compose.yml から include されることを想定しています。
+# ネットワークや名前付きボリュームはメインファイルで定義されているものを参照します。
+
+services:
+  influxdb:
+    image: influxdb:2.7.11 # 指定のバージョン
+    container_name: hydro_ops_influxdb
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+
+    networks:
+      - internal_services # 他の内部サービスとの通信用
+      - traefik_public    # Traefikからのアクセス用
+
+    volumes:
+      - influxdb_data:/var/lib/influxdb2 # メインのdocker-compose.ymlで定義されたボリューム
+
+    environment:
+      - TZ=${TZ} # .envから読み込み
+
+      # InfluxDB v2 初期セットアップ用環境変数 (.envファイルから読み込まれます)
+      - DOCKER_INFLUXDB_INIT_MODE=${INFLUXDB_INIT_MODE}
+      - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUXDB_INIT_USERNAME}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUXDB_INIT_PASSWORD}
+      - DOCKER_INFLUXDB_INIT_ORG=${INFLUXDB_INIT_ORG}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUXDB_INIT_BUCKET}
+      - DOCKER_INFLUXDB_INIT_RETENTION_PERIOD=${INFLUXDB_INIT_RETENTION} # v1.8+ではRETENTION_PERIOD, v2.xではINIT_RETENTION
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_INIT_ADMIN_TOKEN}
+
+      # HTTPリクエストログを無効化 (オプション: パフォーマンスに影響がある場合に検討)
+      # - INFLUXD_HTTP_LOG_ENABLED=false
+      # ログレベル調整 (オプション)
+      # - INFLUXD_LOG_LEVEL=warn
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.influxdb-http.entrypoints=web" # HTTPエントリーポイント
+      - "traefik.http.routers.influxdb-http.rule=Host(`influxdb.${DOMAIN_NAME}`)" # .envのDOMAIN_NAMEを使用
+      - "traefik.http.routers.influxdb-https.entrypoints=websecure" # HTTPSエントリーポイント
+      - "traefik.http.routers.influxdb-https.rule=Host(`influxdb.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.influxdb-https.tls=true" # TLSを有効化 (証明書はTraefikが管理)
+      - "traefik.http.routers.influxdb-https.service=influxdb-svc"
+      - "traefik.http.services.influxdb-svc.loadbalancer.server.port=8086" # InfluxDBコンテナの公開ポート
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8086/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s

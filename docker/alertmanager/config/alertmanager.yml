@@ -1,0 +1,36 @@
+# docker/alertmanager/config/alertmanager.yml
+global:
+  resolve_timeout: 5m
+  # smtp_smarthost: 'your-smtp-server:587'
+  # smtp_from: 'alertmanager@your.domain.com'
+  # smtp_auth_username: 'your-smtp-username'
+  # smtp_auth_password: 'your-smtp-password'
+
+route:
+  receiver: 'default-receiver'
+  group_by: ['alertname', 'job', 'severity']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+
+  # routes:
+  #   - receiver: 'critical-alerts'
+  #     match_re:
+  #       severity: critical|emergency
+  #     continue: true
+
+receivers:
+  - name: 'default-receiver'
+    # email_configs:
+    #   - to: 'operator@your.domain.com'
+    #     send_resolved: true
+    # webhook_configs:
+    #   - url: 'YOUR_WEBHOOK_URL'
+    #     send_resolved: true
+
+# inhibit_rules:
+#   - source_match:
+#       severity: 'critical'
+#     target_match:
+#       severity: 'warning'
+#     equal: ['alertname', 'instance']

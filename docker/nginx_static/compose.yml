@@ -1,0 +1,32 @@
+# docker/nginx_static/compose.yml
+
+services:
+  nginx_static:
+    image: nginx:stable-alpine
+    container_name: hydro_ops_nginx_static
+    restart: unless-stopped
+    volumes:
+      - ./html:/usr/share/nginx/html:ro
+      - ./config/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - internal_services
+      - traefik_public
+    labels:
+      - "traefik.enable=true"
+
+      # ▶ www.yourdomain.com でコンテンツ配信
+      - "traefik.http.routers.nginx_static.rule=Host(`www.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.nginx_static.entrypoints=websecure"
+      - "traefik.http.routers.nginx_static.tls=true"
+      - "traefik.http.services.nginx_static.loadbalancer.server.port=80"
+
+      # ▶ yourdomain.com → www.yourdomain.com リダイレクト用ルーター
+      - "traefik.http.routers.redirect_apex.rule=Host(`${DOMAIN_NAME}`)"
+      - "traefik.http.routers.redirect_apex.entrypoints=websecure"
+      - "traefik.http.routers.redirect_apex.tls=true"
+      - "traefik.http.routers.redirect_apex.middlewares=redirect-to-www"
+
+      # ▶ リダイレクトミドルウェア
+      - "traefik.http.middlewares.redirect-to-www.redirectregex.regex=^https?://(?:[^/]+)(/.*)?"
+      - "traefik.http.middlewares.redirect-to-www.redirectregex.replacement=https://www.${DOMAIN_NAME}$${1}"
+      - "traefik.http.middlewares.redirect-to-www.redirectregex.permanent=true"

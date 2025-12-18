@@ -1,0 +1,10 @@
+{
+  "influxdb": {
+    "url": "https://influxdb.yourdomain.com/api/v2/write?org=your-org&bucket=your-bucket&precision=s",
+    "token": "YOUR_INFLUXDB_TOKEN_HERE"
+  },
+  "csv": {
+    "path": "config.csv"
+  }
+}
+

@@ -1,0 +1,60 @@
+# /opt/hydro-ops/docker/grafana/compose.yml
+# このファイルはメインの docker-compose.yml から include されることを想定しています。
+
+services:
+  grafana:
+    image: grafana/grafana-oss:latest # 特定の安定バージョンを指定 (例: 10.4.2)。'latest'も可。
+    container_name: hydro_ops_grafana
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    user: "${UID_GID:-1000:1000}" # ホストのユーザーで実行する場合 (ボリュームパーミッション対策)
+
+    networks:
+      - internal_services # InfluxDBとの通信用
+      - traefik_public    # Traefikからのアクセス用
+
+    volumes:
+      # メインのdocker-compose.ymlで定義された名前付きボリュームをマウント (Grafanaのデータ永続化)
+      - grafana_data:/var/lib/grafana
+      # プロビジョニング用ディレクトリをマウント (データソース、ダッシュボード)
+      - ./provisioning/:/etc/grafana/provisioning/:ro
+      # カスタム設定ファイル grafana.ini を使用する場合 (オプション)
+      # - ./config/grafana.ini:/etc/grafana/grafana.ini:ro
+
+    environment:
+      # タイムゾーン設定 (.envから読み込み)
+      - TZ=${TZ}
+      # Grafana管理者パスワード (.envから読み込み)
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
+      # Traefik経由でHTTPSアクセスする場合のルートURL (推奨)
+      - GF_SERVER_ROOT_URL=https://grafana.${DOMAIN_NAME}
+      # サブパスで提供しない場合はfalse (通常はこの設定)
+      - GF_SERVER_SERVE_FROM_SUB_PATH=false
+      # ログレベル (必要に応じて変更: "debug", "info", "warn", "error", "critical")
+      - GF_LOG_LEVEL=info
+      # 匿名アクセスを無効化 (デフォルトで無効ですが明示的に)
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+
+      # --- プロビジョニング用環境変数 (InfluxDBデータソース設定のため) ---
+      # これらの値は .env ファイルから読み込まれ、
+      # provisioning/datasources/influxdb-datasource.yml 内で参照されます。
+      - PROV_INFLUXDB_ORG=${INFLUXDB_INIT_ORG}
+      - PROV_INFLUXDB_BUCKET=${INFLUXDB_INIT_BUCKET}
+      - PROV_INFLUXDB_TOKEN=${GRAFANA_INFLUXDB_DATASOURCE_TOKEN}
+
+    labels:
+      - "traefik.enable=true"
+
+      # --- HTTP Router for Grafana (traefik.ymlのグローバルリダイレクトに依存) ---
+      - "traefik.http.routers.grafana-http.entrypoints=web"
+      - "traefik.http.routers.grafana-http.rule=Host(`grafana.${DOMAIN_NAME}`)"
+
+      # --- HTTPS Router for Grafana ---
+      - "traefik.http.routers.grafana-https.entrypoints=websecure"
+      - "traefik.http.routers.grafana-https.rule=Host(`grafana.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.grafana-https.tls=true"
+      - "traefik.http.routers.grafana-https.service=grafana-svc"
+
+      # --- Service Definition for Grafana ---
+      - "traefik.http.services.grafana-svc.loadbalancer.server.port=3000" # Grafanaのデフォルトポート

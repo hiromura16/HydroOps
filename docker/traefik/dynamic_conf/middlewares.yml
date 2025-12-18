@@ -1,0 +1,8 @@
+# docker/traefik/dynamic_conf/middlewares.yml
+http:
+  middlewares:
+    traefik-auth: # この名前が docker/traefik/compose.yml のラベルで参照される
+      basicAuth:
+        usersFile: "/etc/traefik/dashboard_users.txt" # コンテナ内の認証情報ファイルのパス
+        # realm: "Traefik Dashboard" # オプション: Basic認証のダイアログに表示されるメッセージ
+        # headerField: "X-WebAuth-User" # オプション

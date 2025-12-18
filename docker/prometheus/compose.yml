@@ -1,0 +1,33 @@
+# docker/prometheus/compose.yml
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: hydro_ops_prometheus
+    restart: unless-stopped
+
+    networks:
+      - internal_services
+      - traefik_public
+
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--web.external-url=https://prome.${DOMAIN_NAME}/'
+
+    environment:
+      - TZ=${TZ}
+      - DOMAIN_NAME=${DOMAIN_NAME} 
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prometheus.rule=Host(`prome.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.prometheus.entrypoints=websecure"
+      - "traefik.http.routers.prometheus.tls=true"
+      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+      - "traefik.http.routers.prometheus.middlewares=traefik-auth@file"

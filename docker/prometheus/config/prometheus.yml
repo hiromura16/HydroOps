@@ -1,0 +1,23 @@
+# docker/prometheus/config/prometheus.yml
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'cadvisor' # オプション: コンテナ監視用 (後述)
+    # static_configs:
+    #   - targets: ['hydro_ops_cadvisor:8080']
+
+  - job_name: 'telegraf' # 既存のTelegraf (Prometheus出力設定が必要)
+    static_configs:
+      # Telegrafのサービス名と、Telegraf側で設定したPrometheus出力ポート
+      - targets: ['hydro_ops_telegraf:9273'] # ポートはTelegrafの設定に合わせる
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['hydro_ops_alertmanager:9093']

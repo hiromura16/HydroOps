@@ -1,0 +1,26 @@
+# docker/loki/compose.yml
+services:
+  loki:
+    image: grafana/loki:3.4.3
+    container_name: hydro_ops_loki
+    restart: unless-stopped
+    command: -config.file=/etc/loki/loki-config.yml
+    networks:
+      - internal_services
+      - traefik_public
+    ports:
+      - "3100:3100" 
+
+    volumes:
+      - ./config/loki-config.yml:/etc/loki/loki-config.yml:ro
+      - loki_data:/loki # データ永続化用 (メインのdocker-compose.ymlで定義)
+    environment:
+      - TZ=${TZ:-Asia/Tokyo}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.loki.rule=Host(`loki.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.loki.entrypoints=websecure"
+      - "traefik.http.routers.loki.tls=true"
+      - "traefik.http.services.loki.loadbalancer.server.port=3100"
+      - "traefik.http.routers.loki.middlewares=traefik-auth@file"
+ 

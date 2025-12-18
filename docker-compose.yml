@@ -1,0 +1,54 @@
+# hydro-ops/docker-compose.yml 
+
+networks:
+  traefik_public:
+    name: hydro_ops_traefik_public
+    driver: bridge
+  internal_services:
+    name: hydro_ops_internal_services
+    internal: true
+
+volumes:
+  prometheus_data:
+    name: hydro_ops_prometheus_data
+    external: true
+  influxdb_data:
+    name: hydro_ops_influxdb_data
+  grafana_data:
+    name: hydro_ops_grafana_data
+  alertmanager_data:
+    name: hydro_ops_alertmanager_data
+  nodered_data:
+    name: hydro_ops_nodered_data
+  n8n_data:
+    name: hydro_ops_n8n_data
+  loki_data:
+    name: hydro_ops_loki_data
+  promtail_positions:
+    name: hydro_ops_promtail_positions
+  kapacitor_data:
+    name: hydro_ops_kapacitor_data
+    external: true
+
+  # traefik_acme_data: # TraefikでLet's Encryptを使用する場合に定義 (docker/traefik/compose.ymlで参照)
+  #   name: hydro_ops_traefik_acme_data
+
+# services: # servicesキー自体が不要になるか、空でも良い (includeされるファイルで定義するため)
+  # (もし他のComposeファイルで定義されない共通サービスがあればここに記述)
+
+# 各サービスのComposeファイルをインクルード
+# Docker Compose CLI v2.20.0以降で include ディレクティブが利用可能です。
+include:
+  - docker/traefik/compose.yml
+  - docker/prometheus/compose.yml
+  - docker/grafana/compose.yml
+  - docker/alertmanager/compose.yml
+  - docker/influxdb/compose.yml
+  - docker/kapacitor/compose.yml
+  - docker/nodered/compose.yml
+  - docker/n8n/compose.yml
+  - docker/telegraf/compose.yml
+  - docker/loki/compose.yml
+  - docker/promtail/compose.yml
+  - docker/nginx_static/compose.yml # 静的コンテンツ用Nginx
+  - docker/kasen2influxdb/compose.yml 

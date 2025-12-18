@@ -1,0 +1,7 @@
+beautifulsoup4
+pandas
+lxml
+requests
+influxdb-client
+apscheduler
+tenacity

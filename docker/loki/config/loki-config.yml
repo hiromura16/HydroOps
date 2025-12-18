@@ -1,0 +1,53 @@
+# docker/loki/config/loki-config.yml
+
+# 認証設定
+auth_enabled: false
+# falseに設定すると、Lokiへのアクセスに認証が不要になります。
+# 今回は内部ネットワークからの利用が主で、Traefik側で認証をかけることもできるため、falseとしています。
+# 大規模環境や外部公開する場合はtrueにして適切な認証方法(例: OpenID Connect, Basic Auth)を設定します。
+
+
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 9096
+#  log_level: debug
+
+common:
+  instance_addr: 127.0.0.1
+  path_prefix: /loki # コンテナ内のデータ保存パス
+  storage:
+    filesystem:
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
+
+query_range:
+  align_queries_with_step: true
+  # max_query_length: 720h
+  # split_queries_by_interval: 15m
+
+schema_config:
+  configs:
+    - from: 2022-01-01
+      store: boltdb-shipper
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+ruler: # Lokiでアラートを管理する場合 (今回はPrometheusがメインなので必須ではない)
+  alertmanager_url: http://hydro_ops_alertmanager:9093
+
+limits_config: # 必要に応じてリソース制限を設定
+  allow_structured_metadata: false 
+  ingestion_rate_mb: 15
+  ingestion_burst_size_mb: 30
+  max_streams_per_user: 10000 # テスト用途では高めに設定しても良い
+  max_global_streams_per_user: 10000
+  max_label_value_length: 2048
+  max_chunks_per_query: 2000000 # (デフォルト)
+  query_timeout: 1m # (デフォルトは1m)

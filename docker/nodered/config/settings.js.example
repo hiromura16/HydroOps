@@ -1,0 +1,38 @@
+// hydro-ops/docker/nodered/config/settings.js
+module.exports = {
+    // 管理画面の HTTP パス
+    httpAdminRoot: '/',
+  
+    // フローノードなどの HTTP パス
+    httpNodeRoot: '/',
+  
+    // ポート（Docker 側で 1880 にマッピングしている場合はデフォルトでOK）
+    uiPort: process.env.PORT || 1880,
+  
+    // データ保存ディレクトリ（/data がマウントされている）
+    userDir: '/data',
+    flowFile: 'flows.json',
+  
+    // グローバル context（必要に応じて追加）
+    functionGlobalContext: {},
+  
+    // 認証を設定する場合の例
+    adminAuth: {
+      type: "credentials",
+      users: [{
+        username: process.env.NR_USER || "admin",
+        password: process.env.NR_HASHED_PASS || "$2y$08$YOUR_HASHED_PASSWORD_HERE",
+        permissions: "*"
+      }]
+    },
+  
+    // ログレベル
+    logging: {
+      console: {
+        level: 'info',
+        metrics: false,
+        audit: false
+      }
+    }
+  };
+

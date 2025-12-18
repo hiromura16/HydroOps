@@ -1,0 +1,47 @@
+# docker/promtail/config/promtail-config.yml
+
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/promtail_positions.yaml
+
+clients:
+  - url: http://hydro_ops_loki:3100/loki/api/v1/push
+    tenant_id: hydro-ops
+
+scrape_configs:
+  # 1) Docker コンテナログ収集（hydro-ops プロジェクト全体）
+  - job_name: docker_container_logs
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 10s
+        filters:
+          - name: label                     # ← Docker のラベルフィルタ
+            values:
+              - "com.docker.compose.project=hydro-ops"
+    pipeline_stages:
+      - docker: {}
+      - drop:
+          expression: 'level=(debug|trace)'
+    relabel_configs:
+      - source_labels: [__meta_docker_container_name]
+        regex: '/?(.*)'
+        target_label: container
+      - source_labels: [__meta_docker_container_label_com_docker_compose_service]
+        target_label: service
+      - source_labels: [__meta_docker_container_id]
+        target_label: __path__
+        replacement: '/var/lib/docker/containers/${1}/${1}-json.log'
+
+  # 2) systemd ジャーナル（必要なら）
+  - job_name: system_journal
+    journal:
+      max_age: 12h
+      labels:
+        job: systemd-journal
+    relabel_configs:
+      - source_labels: [__journal__systemd_unit]
+        regex: 'sshd\.service'
+        action: keep
