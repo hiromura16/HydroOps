@@ -30,8 +30,8 @@ volumes:
     name: hydro_ops_kapacitor_data
     external: true
 
-  # traefik_acme_data: # TraefikでLet's Encryptを使用する場合に定義 (docker/traefik/compose.ymlで参照)
-  #   name: hydro_ops_traefik_acme_data
+  traefik_acme_data: # Let's Encrypt 証明書データ保存用 (docker/traefik/compose.yml で参照)
+    name: hydro_ops_traefik_acme_data
 
 # services: # servicesキー自体が不要になるか、空でも良い (includeされるファイルで定義するため)
   # (もし他のComposeファイルで定義されない共通サービスがあればここに記述)

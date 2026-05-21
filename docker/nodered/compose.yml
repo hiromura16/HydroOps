@@ -20,6 +20,7 @@ services:
       - "traefik.http.routers.nodered.rule=Host(`nodered.${DOMAIN_NAME}`)"
       - "traefik.http.routers.nodered.entrypoints=websecure"
       - "traefik.http.routers.nodered.tls=true"
+      - "traefik.http.routers.nodered.tls.certresolver=letsencrypt"
       - "traefik.http.services.nodered.loadbalancer.server.port=1880"
       # # Traefik の Basic Auth ミドルウェア(traefik-auth@file は traefik 側の dynamic_conf で定義済み)
       # - "traefik.http.routers.nodered.middlewares=traefik-auth@file"

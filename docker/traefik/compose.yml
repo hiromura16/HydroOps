@@ -4,7 +4,7 @@
 
 services:
   traefik:
-    image: traefik:v3.4.0 # Traefikのバージョンを v3.4.0 に指定
+    image: traefik:v2.11
     container_name: hydro_ops_traefik
     restart: unless-stopped
     security_opt:
@@ -23,12 +23,15 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./traefik.yml:/etc/traefik/traefik.yml:ro # このファイルと同じディレクトリにあるtraefik.yml
       - ./dynamic_conf/:/etc/traefik/dynamic_conf/:ro # このファイルと同じディレクトリにあるdynamic_conf/
-      - ../../certs/live/:/etc/ssl/traefik_certs/:ro # このファイルと同じディレクトリにあるcerts/
+      # 旧有料証明書ファイル（移行完了後は削除可。現在は残しておく）
+      # - ../../certs/live/:/etc/ssl/traefik_certs/:ro
       - ./dashboard_users.txt:/etc/traefik/dashboard_users.txt:ro # このファイルと同じディレクトリにあるdashboard_users.txt
-      # - traefik_acme_data:/letsencrypt # メインのdocker-compose.ymlで定義されたボリューム (Let's Encrypt用)
+      - traefik_acme_data:/letsencrypt # Let's Encrypt 証明書保存用ボリューム (docker-compose.yml で定義)
 
     environment:
       - TZ=${TZ:-Asia/Tokyo}
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - DOCKER_API_VERSION=1.44
       # 以下は .env ファイルで設定することを推奨する例
       # - TRAEFIK_PROVIDERS_DOCKER_EXPOSED_BY_DEFAULT=${TRAEFIK_PROVIDERS_DOCKER_EXPOSED_BY_DEFAULT:-false}
       # - TRAEFIK_API_INSECURE=${TRAEFIK_API_INSECURE:-true} # 開発時のみtrue。本番ではfalseにし、認証を設定。
@@ -41,5 +44,6 @@ services:
       - "traefik.http.routers.traefik-dashboard.rule=Host(`traefik.${DOMAIN_NAME}`)"
       - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
       - "traefik.http.routers.traefik-dashboard.tls=true"
+      - "traefik.http.routers.traefik-dashboard.tls.certresolver=letsencrypt"
       - "traefik.http.routers.traefik-dashboard.service=api@internal"
       - "traefik.http.routers.traefik-dashboard.middlewares=traefik-auth@file"

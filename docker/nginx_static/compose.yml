@@ -18,12 +18,14 @@ services:
       - "traefik.http.routers.nginx_static.rule=Host(`www.${DOMAIN_NAME}`)"
       - "traefik.http.routers.nginx_static.entrypoints=websecure"
       - "traefik.http.routers.nginx_static.tls=true"
+      - "traefik.http.routers.nginx_static.tls.certresolver=letsencrypt"
       - "traefik.http.services.nginx_static.loadbalancer.server.port=80"
 
       # ▶ yourdomain.com → www.yourdomain.com リダイレクト用ルーター
       - "traefik.http.routers.redirect_apex.rule=Host(`${DOMAIN_NAME}`)"
       - "traefik.http.routers.redirect_apex.entrypoints=websecure"
       - "traefik.http.routers.redirect_apex.tls=true"
+      - "traefik.http.routers.redirect_apex.tls.certresolver=letsencrypt"
       - "traefik.http.routers.redirect_apex.middlewares=redirect-to-www"
 
       # ▶ リダイレクトミドルウェア

@@ -1,0 +1,23 @@
+# docker/traefik/dynamic_conf/toshi_hass.yml
+#
+# Traefik ファイルプロバイダー設定 - Docker 外サービス（例: Home Assistant on Raspberry Pi）
+#
+# ⚠️ 以下の値は環境に合わせて変更してください:
+#   - toshi.yourdomain.com  → 実際のサブドメイン名
+#   - INTERNAL_HOST_IP      → 転送先サーバーの IP アドレス（Tailscale IP 等）
+#   - 8123                  → 転送先ポート番号
+
+http:
+  routers:
+    router-toshi:
+      rule: "Host(`toshi.yourdomain.com`)"
+      entryPoints:
+        - "websecure" # HTTPS (443番ポート) を使用
+      service: "toshi-hass" # 下で定義するサービス名を指定
+      tls:
+        certResolver: letsencrypt
+  services:
+    toshi-hass:
+      loadBalancer:
+        servers:
+          - url: "http://INTERNAL_HOST_IP:8123"

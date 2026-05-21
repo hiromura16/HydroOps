@@ -54,6 +54,7 @@ services:
       - "traefik.http.routers.grafana-https.entrypoints=websecure"
       - "traefik.http.routers.grafana-https.rule=Host(`grafana.${DOMAIN_NAME}`)"
       - "traefik.http.routers.grafana-https.tls=true"
+      - "traefik.http.routers.grafana-https.tls.certresolver=letsencrypt"
       - "traefik.http.routers.grafana-https.service=grafana-svc"
 
       # --- Service Definition for Grafana ---

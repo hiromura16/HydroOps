@@ -27,6 +27,7 @@ services:
       - "traefik.http.routers.alertmanager.rule=Host(`alertmanager.${DOMAIN_NAME}`)"
       - "traefik.http.routers.alertmanager.entrypoints=websecure"
       - "traefik.http.routers.alertmanager.tls=true"
+      - "traefik.http.routers.alertmanager.tls.certresolver=letsencrypt"
       - "traefik.http.services.alertmanager.loadbalancer.server.port=9093"
       # Traefikダッシュボードと同じ認証をかける場合 (推奨)
       - "traefik.http.routers.alertmanager.middlewares=traefik-auth@file" # docker/traefik/dynamic_conf/ で定義した認証ミドルウェア名

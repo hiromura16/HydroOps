@@ -68,4 +68,7 @@ docker/traefik/dashboard_users.txt
 # 一時ファイル・生成ファイル
 tree.txt
 *.pyc
-__pycache__/ 
+__pycache__/
+
+# 社内引き継ぎ書類（機密情報を含むため git 管理外）
+HANDOVER.md

@@ -47,16 +47,20 @@ Hydro-Opsは次のコンポーネントで構成されています：
 
 **重要**: 機密情報を削除したため、デプロイ前に必ず[DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md)を確認し、すべてのプレースホルダーを実際の値に置き換えてください。
 
+SSL証明書は **Let's Encrypt による自動取得・自動更新**（90日周期）を使用しています。`docker/traefik/traefik.yml` の `certificatesResolvers.letsencrypt.acme.email` に連絡先メールアドレスを設定してください。
+
 ## 各サービスへのアクセス
 
 Traefikの設定に基づき、各サービスは以下のURLでアクセスできます（実際のドメイン名に置き換えてください）：
 
-- Grafana: `https://grafana.yourdomain.com`
-- Prometheus: `https://prometheus.yourdomain.com`
-- InfluxDB: `https://influxdb.yourdomain.com`
-- Node-RED: `https://nodered.yourdomain.com`
-- n8n: `https://n8n.yourdomain.com`
-- Traefik Dashboard: `https://traefik.yourdomain.com`（認証が必要）
+- Grafana: `https://grafana.DOMAIN_NAME`
+- Prometheus: `https://prome.DOMAIN_NAME`
+- InfluxDB: `https://influxdb.DOMAIN_NAME`
+- Node-RED: `https://nodered.DOMAIN_NAME`
+- n8n: `https://n8n.DOMAIN_NAME`
+- Traefik Dashboard: `https://traefik.DOMAIN_NAME`（認証が必要）
+
+（`DOMAIN_NAME` は `.env` で設定した値）
 
 ## Kasen2InfluxDBについて
 

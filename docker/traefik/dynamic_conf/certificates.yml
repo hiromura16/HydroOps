@@ -1,15 +1,7 @@
 # docker/traefik/dynamic_conf/certificates.yml
-tls:
-  certificates:
-    # この定義は残しても良いですし、defaultCertificateで指定するのであれば
-    # 重複を避けるためにコメントアウトしても良いかもしれません。
-    # まずは両方記述してみて、エラーが出たら片方コメントアウトを試します。
-    - certFile: "/etc/ssl/traefik_certs/fullchain.pem"
-      keyFile: "/etc/ssl/traefik_certs/yourdomain.com.key"
-      stores: ["default"] # defaultストアにこの証明書を追加する
-
-  stores:
-    default:
-      defaultCertificate: # defaultストアのデフォルト証明書としてこれを指定
-        certFile: "/etc/ssl/traefik_certs/fullchain.pem"
-        keyFile: "/etc/ssl/traefik_certs/yourdomain.com.key"
+#
+# ⚠️ このファイルは Let's Encrypt 移行（2026-05-22）に伴い無効化済み。
+#
+# 証明書は Traefik の ACME クライアントが自動管理するため、
+# この手動設定ファイルへの記述は不要です。
+# traefik.yml の certificatesResolvers セクションを参照してください。

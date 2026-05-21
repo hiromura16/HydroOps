@@ -41,6 +41,7 @@ services:
       - "traefik.http.routers.influxdb-https.entrypoints=websecure" # HTTPSエントリーポイント
       - "traefik.http.routers.influxdb-https.rule=Host(`influxdb.${DOMAIN_NAME}`)"
       - "traefik.http.routers.influxdb-https.tls=true" # TLSを有効化 (証明書はTraefikが管理)
+      - "traefik.http.routers.influxdb-https.tls.certresolver=letsencrypt"
       - "traefik.http.routers.influxdb-https.service=influxdb-svc"
       - "traefik.http.services.influxdb-svc.loadbalancer.server.port=8086" # InfluxDBコンテナの公開ポート
 
